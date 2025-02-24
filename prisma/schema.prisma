@@ -12,3 +12,66 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Role {
+	id            	Int         @id @default(autoincrement())
+	name          	String      @db.VarChar(50)
+	createdAt     	DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+	updatedAt     	DateTime    @updatedAt @map("updated_at") @db.Timestamptz()
+	@@map("roles")
+	@@index([name])
+	RolePermission RolePermission[]
+	User User[]
+}
+
+model Permission {
+	id				Int			@id	@default(autoincrement())
+	name			String		@db.VarChar(50)
+	createdAt		DateTime	@default(now())	@map("created_at") @db.Timestamptz()
+	updatedAt		DateTime	@updatedAt	@map("updated_at") @db.Timestamptz()
+	@@map("permissions")
+	@@index([name])
+	RolePermission RolePermission[]
+}
+
+model RolePermission {
+	roleId        	Int         @map("role_id")
+	permissionId  	Int         @map("permission_id")
+	role          	Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+	permission    	Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+	@@id([roleId, permissionId])
+	@@map("roles_permissions")
+}
+
+model User {
+	id				Int			@id	@default(autoincrement())
+	email			String		@db.VarChar(80)
+	password		String		
+	isActive		Boolean		@map("is_active")	@default(true)
+	lastLogin		DateTime?	@db.Timestamptz() 	@map("last_login")
+	roleId			Int?		@map("role_id")
+	role			Role?		@relation(fields: [roleId], references: [id], onDelete: SetNull)
+	profile			Profile?
+	createdAt		DateTime	@default(now())	@map("created_at") 	@db.Timestamptz()
+	updatedAt		DateTime	@updatedAt		@map("updated_at") 	@db.Timestamptz()
+	@@map("users")
+	@@index([email])
+}
+
+model Profile {
+	id				Int			@id					@default(autoincrement())
+	firstName		String		@db.VarChar(80)		@map("first_name")
+	lastName		String		@db.VarChar(80)		@map("last_name")
+	countryCode		String?		@db.VarChar(5)		@map("country_code")
+	contactNumber	String?		@db.VarChar(20)		@map("contact_number")
+	birthOfDate		DateTime?	@db.Date			@map("birth_of_date")
+	placeOfBirth	String?		@db.VarChar(120)	@map("place_of_birth")
+	address			String?		@db.Text
+	userId			Int			@map("user_id") @unique
+	user			User		@relation(fields: [userId], references: [id], onDelete: Cascade)
+	createdAt		DateTime	@default(now())		@map("created_at") 	@db.Timestamptz()
+	updatedAt		DateTime	@updatedAt			@map("updated_at") 	@db.Timestamptz()
+	@@map("profiles")
+	@@index([firstName, lastName])
+}

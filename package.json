@@ -9,8 +9,12 @@
     "lint:fix": "eslint src --fix",
     "prepare": "husky && husky install"
   },
+  "prisma": {
+    "seed": "tsx prisma/seeders/index.ts"
+  },
   "dependencies": {
     "@prisma/client": "^6.4.1",
+    "bcrypt": "^5.1.1",
     "elysia": "latest",
     "pg": "^8.13.3"
   },
